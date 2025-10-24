@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Notes App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Meeting Notes</h1>
+            <button id="newMeetingBtn" class="btn btn-primary">+ New Meeting</button>
+        </header>
+
+        <div id="meetingList" class="meeting-list">
+            <h2>Recent Meetings</h2>
+            <div id="meetingsContainer"></div>
+        </div>
+
+        <div id="meetingEditor" class="meeting-editor hidden">
+            <div class="editor-header">
+                <button id="backBtn" class="btn btn-secondary">← Back to List</button>
+                <button id="exportBtn" class="btn btn-secondary">Export</button>
+                <button id="deleteMeetingBtn" class="btn btn-danger">Delete Meeting</button>
+            </div>
+
+            <div class="meeting-info">
+                <input type="text" id="meetingTitle" class="input-title" placeholder="Meeting Title">
+                <div class="info-row">
+                    <div class="info-item">
+                        <label for="meetingDate">Date:</label>
+                        <input type="datetime-local" id="meetingDate">
+                    </div>
+                    <div class="info-item">
+                        <label for="meetingAttendees">Attendees:</label>
+                        <input type="text" id="meetingAttendees" placeholder="Comma-separated names">
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-section">
+                <h3>Notes</h3>
+                <div class="note-input-container">
+                    <textarea id="noteInput" placeholder="Type your note here..." rows="3"></textarea>
+                    <div class="note-actions">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isActionItem">
+                            Mark as Action Item
+                        </label>
+                        <button id="addNoteBtn" class="btn btn-primary">Add Note</button>
+                    </div>
+                </div>
+                <div id="notesContainer" class="notes-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
