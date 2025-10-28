@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>📝 Meeting Notes</h1>
+                <h1>🏨 Housekeeping Manager Notes</h1>
             </div>
             <div class="header-right">
                 <button id="statsBtn" class="btn btn-icon" title="Statistics">
@@ -19,7 +19,7 @@
                 <button id="themeToggle" class="btn btn-icon" title="Toggle Dark Mode">
                     <span class="icon">🌙</span>
                 </button>
-                <button id="newMeetingBtn" class="btn btn-primary">+ New Meeting</button>
+                <button id="newMeetingBtn" class="btn btn-primary">+ New Session</button>
             </div>
         </header>
 
@@ -50,11 +50,16 @@
                             <option value="notes">Most Notes</option>
                         </select>
                         <select id="filterBy" class="select-input">
-                            <option value="all">All Meetings</option>
+                            <option value="all">All Sessions</option>
                             <option value="today">Today</option>
                             <option value="week">This Week</option>
                             <option value="month">This Month</option>
                             <option value="actions">Has Action Items</option>
+                            <option value="type-daily-briefing">Daily Briefings</option>
+                            <option value="type-room-inspection">Room Inspections</option>
+                            <option value="type-staff-training">Staff Training</option>
+                            <option value="type-maintenance-review">Maintenance Reviews</option>
+                            <option value="type-supply-inventory">Supply Inventory</option>
                         </select>
                     </div>
                 </div>
@@ -82,7 +87,29 @@
             </div>
 
             <div class="meeting-info">
-                <input type="text" id="meetingTitle" class="input-title" placeholder="Meeting Title">
+                <input type="text" id="meetingTitle" class="input-title" placeholder="Meeting Title (e.g., Morning Briefing, Room 305 Inspection)">
+
+                <!-- Meeting Type Selector -->
+                <div class="info-item meeting-type-section">
+                    <label for="meetingType">📋 Meeting Type:</label>
+                    <select id="meetingType" class="select-input meeting-type-select">
+                        <option value="">Select Meeting Type</option>
+                        <option value="daily-briefing">Daily Briefing</option>
+                        <option value="room-inspection">Room Inspection</option>
+                        <option value="staff-training">Staff Training</option>
+                        <option value="maintenance-review">Maintenance Review</option>
+                        <option value="supply-inventory">Supply Inventory</option>
+                        <option value="guest-issues">Guest Issues/Complaints</option>
+                        <option value="quality-assurance">Quality Assurance</option>
+                        <option value="safety-meeting">Safety Meeting</option>
+                        <option value="shift-planning">Shift Planning</option>
+                        <option value="department-meeting">Department Meeting</option>
+                        <option value="performance-review">Performance Review</option>
+                        <option value="emergency-response">Emergency Response</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
                 <div class="info-row">
                     <div class="info-item">
                         <label for="meetingDate">📅 Start Date & Time:</label>
@@ -95,17 +122,28 @@
                 </div>
                 <div class="info-row">
                     <div class="info-item">
-                        <label for="meetingAttendees">👥 Attendees:</label>
-                        <input type="text" id="meetingAttendees" placeholder="Comma-separated names">
+                        <label for="meetingAttendees">👥 Staff/Attendees:</label>
+                        <input type="text" id="meetingAttendees" placeholder="e.g., Maria, John, Lisa">
                     </div>
                     <div class="info-item">
-                        <label for="meetingTags">🏷️ Tags:</label>
-                        <input type="text" id="meetingTags" placeholder="e.g., sprint-planning, review">
+                        <label for="meetingLocation">📍 Location/Area:</label>
+                        <input type="text" id="meetingLocation" placeholder="e.g., Floor 3, Housekeeping Office">
                     </div>
                 </div>
                 <div class="info-item">
-                    <label for="meetingLocation">📍 Location/Link:</label>
-                    <input type="text" id="meetingLocation" placeholder="Meeting room or video call link">
+                    <label for="meetingTags">🏷️ Tags:</label>
+                    <input type="text" id="meetingTags" placeholder="e.g., urgent, follow-up, maintenance">
+                </div>
+
+                <!-- Quick Templates for Housekeeping -->
+                <div class="quick-templates">
+                    <label>📝 Quick Templates:</label>
+                    <div class="template-buttons">
+                        <button type="button" class="btn btn-template" data-template="room-check">Room Checklist</button>
+                        <button type="button" class="btn btn-template" data-template="supply-list">Supply List</button>
+                        <button type="button" class="btn btn-template" data-template="maintenance">Maintenance Items</button>
+                        <button type="button" class="btn btn-template" data-template="staff-issues">Staff Issues</button>
+                    </div>
                 </div>
             </div>
 

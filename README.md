@@ -2,19 +2,25 @@
 
 A collection of useful web applications.
 
-## Meeting Notes App - Enhanced Version
+## Housekeeping Manager Notes App - Enhanced Version
 
-A powerful, feature-rich web application for taking professional notes during meetings with calendar synchronization.
+A powerful, feature-rich web application specifically designed for housekeeping managers to take professional notes during daily operations, with calendar synchronization and quick templates.
 
 ### Key Features
 
+#### Housekeeping-Specific
+- **12 Meeting Types**: Daily Briefing, Room Inspection, Staff Training, Maintenance Review, Supply Inventory, Guest Issues, Quality Assurance, Safety Meeting, Shift Planning, Department Meeting, Performance Review, Emergency Response
+- **Quick Templates**: One-click checklists for room inspections, supply inventory, maintenance reporting, and staff notes
+- **Filter by Type**: Quickly find all inspections, briefings, or any specific session type
+- **Housekeeping Labels**: Staff/Attendees and Location/Area fields optimized for housekeeping operations
+
 #### Core Functionality
-- Create and manage meetings with full details (title, dates, attendees, location, tags)
-- Add timestamped notes during meetings
+- Create and manage sessions with full details (title, type, dates, staff, location, tags)
+- Add timestamped notes during sessions
 - Mark important notes as action items with special highlighting
 - Edit existing notes with visual feedback
 - Auto-save to browser local storage
-- Delete individual notes or entire meetings
+- Delete individual notes or entire sessions
 
 #### Advanced Features
 - **Voice-to-Text**: Real-time voice transcription with auto-save mode for hands-free note-taking

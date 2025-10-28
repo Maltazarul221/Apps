@@ -43,6 +43,7 @@ class MeetingNotesApp {
 
         // Inputs
         this.meetingTitle = document.getElementById('meetingTitle');
+        this.meetingType = document.getElementById('meetingType');
         this.meetingDate = document.getElementById('meetingDate');
         this.meetingEndDate = document.getElementById('meetingEndDate');
         this.meetingAttendees = document.getElementById('meetingAttendees');
@@ -55,6 +56,9 @@ class MeetingNotesApp {
         this.sortBySelect = document.getElementById('sortBy');
         this.filterBySelect = document.getElementById('filterBy');
         this.icsFileInput = document.getElementById('icsFileInput');
+
+        // Template buttons
+        this.templateButtons = document.querySelectorAll('.btn-template');
     }
 
     attachEventListeners() {
@@ -73,11 +77,20 @@ class MeetingNotesApp {
 
         // Auto-save on input changes
         this.meetingTitle.addEventListener('input', () => this.saveMeetingInfo());
+        this.meetingType.addEventListener('change', () => this.saveMeetingInfo());
         this.meetingDate.addEventListener('change', () => this.saveMeetingInfo());
         this.meetingEndDate.addEventListener('change', () => this.saveMeetingInfo());
         this.meetingAttendees.addEventListener('input', () => this.saveMeetingInfo());
         this.meetingTags.addEventListener('input', () => this.saveMeetingInfo());
         this.meetingLocation.addEventListener('input', () => this.saveMeetingInfo());
+
+        // Template buttons
+        this.templateButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.applyTemplate(btn.dataset.template);
+            });
+        });
 
         // Search and filter
         this.searchInput.addEventListener('input', (e) => {
@@ -140,7 +153,8 @@ class MeetingNotesApp {
 
         const meeting = {
             id: Date.now().toString(),
-            title: 'Untitled Meeting',
+            title: 'New Session',
+            meetingType: '',
             date: now.toISOString().slice(0, 16),
             endDate: endTime.toISOString().slice(0, 16),
             attendees: '',
@@ -205,6 +219,10 @@ class MeetingNotesApp {
             filtered = filtered.filter(m => new Date(m.date) >= monthAgo);
         } else if (this.filterBy === 'actions') {
             filtered = filtered.filter(m => m.notes.some(n => n.isActionItem));
+        } else if (this.filterBy.startsWith('type-')) {
+            // Filter by meeting type
+            const meetingType = this.filterBy.replace('type-', '');
+            filtered = filtered.filter(m => m.meetingType === meetingType);
         }
 
         return filtered;
@@ -262,9 +280,14 @@ class MeetingNotesApp {
             const actionItemsCount = meeting.notes.filter(n => n.isActionItem).length;
             const tags = meeting.tags ? meeting.tags.split(',').map(t => t.trim()).filter(t => t) : [];
 
+            // Format meeting type for display
+            const meetingTypeDisplay = meeting.meetingType ?
+                meeting.meetingType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
+
             return `
                 <div class="meeting-card" onclick="app.showMeetingEditor('${meeting.id}')">
                     <h3>${this.escapeHtml(meeting.title)}</h3>
+                    ${meetingTypeDisplay ? `<div class="meeting-type-badge">📋 ${meetingTypeDisplay}</div>` : ''}
                     <div class="meeting-card-meta">
                         <span>📅 ${formattedDate}</span>
                         ${meeting.attendees ? `<span>👥 ${this.escapeHtml(meeting.attendees)}</span>` : ''}
@@ -293,6 +316,7 @@ class MeetingNotesApp {
 
         // Populate meeting info
         this.meetingTitle.value = meeting.title;
+        this.meetingType.value = meeting.meetingType || '';
         this.meetingDate.value = meeting.date;
         this.meetingEndDate.value = meeting.endDate || meeting.date;
         this.meetingAttendees.value = meeting.attendees || '';
@@ -338,7 +362,8 @@ class MeetingNotesApp {
         const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
         if (!meeting) return;
 
-        meeting.title = this.meetingTitle.value || 'Untitled Meeting';
+        meeting.title = this.meetingTitle.value || 'New Session';
+        meeting.meetingType = this.meetingType.value;
         meeting.date = this.meetingDate.value;
         meeting.endDate = this.meetingEndDate.value;
         meeting.attendees = this.meetingAttendees.value;
@@ -917,6 +942,60 @@ class MeetingNotesApp {
                 this.voiceStatusText.textContent = 'Listening...';
             }
         }, 1500);
+    }
+
+    // Quick Templates for Housekeeping
+    applyTemplate(templateType) {
+        let templateText = '';
+        const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        switch(templateType) {
+            case 'room-check':
+                templateText = `Room Inspection Checklist (${now}):
+- Bed made and linens fresh
+- Bathroom cleaned and sanitized
+- Trash emptied
+- Floors vacuumed/mopped
+- Surfaces dusted
+- Amenities replenished
+- AC/Heating functioning
+- No maintenance issues observed`;
+                break;
+
+            case 'supply-list':
+                templateText = `Supply Inventory Check (${now}):
+- Cleaning solutions stock level:
+- Towels available:
+- Bed linens count:
+- Toiletries inventory:
+- Cleaning equipment status:
+- Items needing reorder:`;
+                break;
+
+            case 'maintenance':
+                templateText = `Maintenance Issues (${now}):
+- Room/Area number:
+- Issue description:
+- Priority level (High/Medium/Low):
+- Reported to maintenance: Yes/No
+- Follow-up required:`;
+                break;
+
+            case 'staff-issues':
+                templateText = `Staff Notes (${now}):
+- Staff member(s):
+- Topic/Issue:
+- Action taken:
+- Follow-up needed:
+- Next steps:`;
+                break;
+        }
+
+        // Add template to note input
+        const currentText = this.noteInput.value.trim();
+        this.noteInput.value = currentText ? currentText + '\n\n' + templateText : templateText;
+        this.noteInput.focus();
+        this.noteInput.scrollTop = this.noteInput.scrollHeight;
     }
 
     render() {
