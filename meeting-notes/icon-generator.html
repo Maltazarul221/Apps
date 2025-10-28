@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Generator - Housekeeping Manager Notes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            margin: 10px;
+            border-radius: 10px;
+        }
+        .icons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .icon-item {
+            text-align: center;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .instructions {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏨 App Icon Generator</h1>
+        <p>Generate and download app icons for the Housekeeping Manager Notes PWA</p>
+
+        <div class="icons-grid" id="iconsGrid"></div>
+
+        <div class="instructions">
+            <h3>📝 Instructions:</h3>
+            <ol>
+                <li>Click "Download" button under each icon size</li>
+                <li>Save all icons to the <code>meeting-notes/</code> folder</li>
+                <li>Icons will be named: icon-72.png, icon-96.png, etc.</li>
+                <li>After downloading all icons, your PWA will be ready to install!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const iconsGrid = document.getElementById('iconsGrid');
+
+        sizes.forEach(size => {
+            const iconItem = document.createElement('div');
+            iconItem.className = 'icon-item';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.style.width = '120px';
+            canvas.style.height = '120px';
+
+            const ctx = canvas.getContext('2d');
+
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+
+            // Draw rounded rectangle
+            const radius = size * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw hotel icon (simplified building)
+            ctx.fillStyle = 'white';
+
+            // Building body
+            const buildingWidth = size * 0.5;
+            const buildingHeight = size * 0.6;
+            const buildingX = (size - buildingWidth) / 2;
+            const buildingY = size * 0.3;
+            ctx.fillRect(buildingX, buildingY, buildingWidth, buildingHeight);
+
+            // Windows (4x3 grid)
+            ctx.fillStyle = '#667eea';
+            const windowSize = size * 0.06;
+            const windowSpacing = size * 0.1;
+            for (let row = 0; row < 3; row++) {
+                for (let col = 0; col < 3; col++) {
+                    const x = buildingX + windowSpacing + col * windowSpacing;
+                    const y = buildingY + windowSpacing + row * (windowSpacing + windowSize);
+                    ctx.fillRect(x, y, windowSize, windowSize);
+                }
+            }
+
+            // Roof
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.moveTo(buildingX - size * 0.05, buildingY);
+            ctx.lineTo(size / 2, buildingY - size * 0.15);
+            ctx.lineTo(buildingX + buildingWidth + size * 0.05, buildingY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Add emoji-style hotel icon on top
+            ctx.font = `${size * 0.25}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            ctx.fillText('🏨', size / 2, size * 0.18);
+
+            const label = document.createElement('p');
+            label.textContent = `${size}x${size}`;
+            label.style.fontWeight = 'bold';
+            label.style.margin = '10px 0 5px 0';
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Download';
+            downloadBtn.onclick = () => downloadIcon(canvas, size);
+
+            iconItem.appendChild(canvas);
+            iconItem.appendChild(label);
+            iconItem.appendChild(downloadBtn);
+            iconsGrid.appendChild(iconItem);
+        });
+
+        function downloadIcon(canvas, size) {
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+    </script>
+</body>
+</html>
