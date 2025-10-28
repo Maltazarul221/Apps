@@ -9,44 +9,114 @@
 <body>
     <div class="container">
         <header>
-            <h1>Meeting Notes</h1>
-            <button id="newMeetingBtn" class="btn btn-primary">+ New Meeting</button>
+            <div class="header-left">
+                <h1>📝 Meeting Notes</h1>
+            </div>
+            <div class="header-right">
+                <button id="statsBtn" class="btn btn-icon" title="Statistics">
+                    <span class="icon">📊</span>
+                </button>
+                <button id="themeToggle" class="btn btn-icon" title="Toggle Dark Mode">
+                    <span class="icon">🌙</span>
+                </button>
+                <button id="newMeetingBtn" class="btn btn-primary">+ New Meeting</button>
+            </div>
         </header>
 
+        <!-- Statistics Modal -->
+        <div id="statsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>📊 Statistics</h2>
+                    <button id="closeStatsBtn" class="btn-close">✕</button>
+                </div>
+                <div id="statsContent" class="stats-grid"></div>
+            </div>
+        </div>
+
         <div id="meetingList" class="meeting-list">
-            <h2>Recent Meetings</h2>
+            <div class="list-header">
+                <h2>Recent Meetings</h2>
+                <div class="list-controls">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search meetings and notes...">
+                    </div>
+                    <div class="filter-controls">
+                        <select id="sortBy" class="select-input">
+                            <option value="recent">Most Recent</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="title">Title (A-Z)</option>
+                            <option value="notes">Most Notes</option>
+                        </select>
+                        <select id="filterBy" class="select-input">
+                            <option value="all">All Meetings</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="actions">Has Action Items</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             <div id="meetingsContainer"></div>
         </div>
 
         <div id="meetingEditor" class="meeting-editor hidden">
             <div class="editor-header">
-                <button id="backBtn" class="btn btn-secondary">← Back to List</button>
-                <button id="exportBtn" class="btn btn-secondary">Export</button>
-                <button id="deleteMeetingBtn" class="btn btn-danger">Delete Meeting</button>
+                <div class="editor-header-left">
+                    <button id="backBtn" class="btn btn-secondary">← Back to List</button>
+                </div>
+                <div class="editor-header-right">
+                    <button id="exportTxtBtn" class="btn btn-secondary" title="Export as Text">
+                        <span class="icon">📄</span> Export TXT
+                    </button>
+                    <button id="exportIcsBtn" class="btn btn-secondary" title="Export to Calendar">
+                        <span class="icon">📅</span> Export .ICS
+                    </button>
+                    <button id="importIcsBtn" class="btn btn-secondary" title="Import from Calendar">
+                        <span class="icon">📥</span> Import .ICS
+                    </button>
+                    <button id="deleteMeetingBtn" class="btn btn-danger">Delete Meeting</button>
+                </div>
             </div>
 
             <div class="meeting-info">
                 <input type="text" id="meetingTitle" class="input-title" placeholder="Meeting Title">
                 <div class="info-row">
                     <div class="info-item">
-                        <label for="meetingDate">Date:</label>
+                        <label for="meetingDate">📅 Start Date & Time:</label>
                         <input type="datetime-local" id="meetingDate">
                     </div>
                     <div class="info-item">
-                        <label for="meetingAttendees">Attendees:</label>
+                        <label for="meetingEndDate">⏰ End Date & Time:</label>
+                        <input type="datetime-local" id="meetingEndDate">
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-item">
+                        <label for="meetingAttendees">👥 Attendees:</label>
                         <input type="text" id="meetingAttendees" placeholder="Comma-separated names">
                     </div>
+                    <div class="info-item">
+                        <label for="meetingTags">🏷️ Tags:</label>
+                        <input type="text" id="meetingTags" placeholder="e.g., sprint-planning, review">
+                    </div>
+                </div>
+                <div class="info-item">
+                    <label for="meetingLocation">📍 Location/Link:</label>
+                    <input type="text" id="meetingLocation" placeholder="Meeting room or video call link">
                 </div>
             </div>
 
             <div class="notes-section">
                 <h3>Notes</h3>
                 <div class="note-input-container">
-                    <textarea id="noteInput" placeholder="Type your note here..." rows="3"></textarea>
+                    <textarea id="noteInput" placeholder="Type your note here... (Ctrl/Cmd + Enter to add)" rows="3"></textarea>
                     <div class="note-actions">
                         <label class="checkbox-label">
                             <input type="checkbox" id="isActionItem">
-                            Mark as Action Item
+                            ⚡ Mark as Action Item
                         </label>
                         <button id="addNoteBtn" class="btn btn-primary">Add Note</button>
                     </div>
@@ -55,6 +125,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Hidden file input for ICS import -->
+    <input type="file" id="icsFileInput" accept=".ics" style="display: none;">
 
     <script src="app.js"></script>
 </body>
