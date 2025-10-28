@@ -13,6 +13,8 @@ A powerful, feature-rich web application for taking professional notes during me
 - **Note Editing**: Full support for editing existing notes with visual feedback
 
 ### Advanced Features
+- **Voice-to-Text**: Automatic note-taking from voice with real-time transcription
+- **Auto-Save Voice Notes**: Option to automatically save voice transcriptions as separate notes
 - **Dark Mode**: Beautiful dark theme with smooth transitions
 - **Search**: Search across meeting titles, attendees, tags, and note content
 - **Advanced Filtering**: Filter meetings by date (today, this week, this month) or action items
@@ -55,12 +57,21 @@ A powerful, feature-rich web application for taking professional notes during me
 
 #### Taking Notes
 
+**Manual Note-Taking:**
 1. Type your note in the text area
 2. Optionally check "Mark as Action Item" for important tasks
 3. Click "Add Note" or press `Ctrl/Cmd + Enter`
 4. Notes appear below with timestamps
 5. Click the edit (✏️) button to modify any note
 6. Click the delete (✕) button to remove a note
+
+**Voice Note-Taking:**
+1. Click the "🎤 Voice Input" button to start recording
+2. Speak your notes - real-time transcription will appear in the text area
+3. **Manual Mode** (default): Click "⏹️ Stop Recording" when done, then click "Add Note" to save
+4. **Auto-Save Mode**: Enable "Auto-save voice notes" checkbox - each phrase is saved automatically as you speak
+5. The recording indicator shows when the system is actively listening
+6. Grant microphone permissions when prompted by your browser
 
 #### Managing Meetings
 
@@ -91,6 +102,41 @@ Click the statistics icon (📊) to view:
 
 ### Auto-Save
 All changes to meeting titles, dates, attendees, tags, locations, and notes are automatically saved to your browser's local storage. You never have to worry about losing your notes.
+
+### Voice Recognition (Speech-to-Text)
+Take notes hands-free with automatic voice transcription powered by the Web Speech API.
+
+**How it works:**
+- Click the "🎤 Voice Input" button to start recording
+- The app will request microphone permissions (grant access when prompted)
+- Speak naturally - the app transcribes your speech in real-time
+- See live transcription appear in the text area as you speak
+
+**Two Modes:**
+
+**Manual Mode (Default):**
+- All spoken text accumulates in the note input field
+- Edit the transcribed text if needed
+- Click "Stop Recording" when finished
+- Click "Add Note" to save the complete transcription
+
+**Auto-Save Mode:**
+- Enable the "Auto-save voice notes" checkbox
+- Each sentence/phrase is automatically saved as a separate note
+- Perfect for rapid note-taking during fast-paced meetings
+- The recording indicator shows "Note saved!" after each auto-save
+
+**Browser Support:**
+- Chrome/Edge: Full support (recommended)
+- Safari: Full support
+- Firefox: Limited support
+- Note: Voice recognition requires an active internet connection
+
+**Tips:**
+- Speak clearly and at a moderate pace
+- Pause briefly between sentences for better recognition
+- Use auto-save mode for continuous meeting transcription
+- Use manual mode when you want to review before saving
 
 ### Action Items
 Mark important notes as action items to make them stand out. They appear with:
@@ -181,14 +227,16 @@ This app runs entirely in your browser. No data is ever transmitted to any serve
 
 ## Tips & Best Practices
 
-1. **Regular Exports**: Export important meetings to .txt or .ics files for backup
-2. **Use Action Items**: Mark follow-up tasks as action items for easy tracking
-3. **Tag Everything**: Use tags to organize meetings by project, team, or topic
-4. **Search Often**: Use the search to quickly find past discussions
-5. **Filter by Action Items**: Use the "Has Action Items" filter to review pending tasks
-6. **Dark Mode**: Enable dark mode for comfortable evening work
-7. **Calendar Sync**: Export meetings to your calendar for scheduling
-8. **Edit Notes**: Don't hesitate to edit notes if you need to clarify or add details
+1. **Voice Input**: Use voice recognition for hands-free note-taking during meetings
+2. **Auto-Save Mode**: Enable auto-save voice notes for continuous transcription
+3. **Regular Exports**: Export important meetings to .txt or .ics files for backup
+4. **Use Action Items**: Mark follow-up tasks as action items for easy tracking
+5. **Tag Everything**: Use tags to organize meetings by project, team, or topic
+6. **Search Often**: Use the search to quickly find past discussions
+7. **Filter by Action Items**: Use the "Has Action Items" filter to review pending tasks
+8. **Dark Mode**: Enable dark mode for comfortable evening work
+9. **Calendar Sync**: Export meetings to your calendar for scheduling
+10. **Edit Notes**: Don't hesitate to edit notes if you need to clarify or add details
 
 ## Technical Details
 
@@ -210,6 +258,7 @@ This app runs entirely in your browser. No data is ever transmitted to any serve
 ### JavaScript Features
 - ES6 Classes
 - LocalStorage API
+- Web Speech API (for voice recognition)
 - FileReader API (for .ics import)
 - Blob API (for file downloads)
 - Date manipulation
@@ -218,6 +267,8 @@ This app runs entirely in your browser. No data is ever transmitted to any serve
 ## New in Enhanced Version
 
 ### Version 2.0 Enhancements
+- 🎤 Voice-to-text transcription with Web Speech API
+- 🔊 Real-time voice recognition with auto-save mode
 - ✨ Dark mode with persistent preference
 - 🔍 Full-text search across all meetings and notes
 - 🏷️ Tags system for better organization
