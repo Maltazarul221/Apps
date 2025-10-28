@@ -2,6 +2,7 @@
 class MeetingNotesApp {
     constructor() {
         this.meetings = this.loadMeetings();
+        this.users = this.loadUsers();
         this.currentMeetingId = null;
         this.currentEditingNoteIndex = null;
         this.searchQuery = '';
@@ -31,6 +32,8 @@ class MeetingNotesApp {
         this.statsBtn = document.getElementById('statsBtn');
         this.closeStatsBtn = document.getElementById('closeStatsBtn');
         this.voiceBtn = document.getElementById('voiceBtn');
+        this.manageUsersBtn = document.getElementById('manageUsersBtn');
+        this.emailSummaryBtn = document.getElementById('emailSummaryBtn');
 
         // Views
         this.meetingList = document.getElementById('meetingList');
@@ -40,13 +43,13 @@ class MeetingNotesApp {
         this.statsModal = document.getElementById('statsModal');
         this.voiceStatus = document.getElementById('voiceStatus');
         this.voiceStatusText = document.getElementById('voiceStatusText');
+        this.userModal = document.getElementById('userModal');
 
         // Inputs
         this.meetingTitle = document.getElementById('meetingTitle');
         this.meetingType = document.getElementById('meetingType');
         this.meetingDate = document.getElementById('meetingDate');
         this.meetingEndDate = document.getElementById('meetingEndDate');
-        this.meetingAttendees = document.getElementById('meetingAttendees');
         this.meetingTags = document.getElementById('meetingTags');
         this.meetingLocation = document.getElementById('meetingLocation');
         this.noteInput = document.getElementById('noteInput');
@@ -56,6 +59,21 @@ class MeetingNotesApp {
         this.sortBySelect = document.getElementById('sortBy');
         this.filterBySelect = document.getElementById('filterBy');
         this.icsFileInput = document.getElementById('icsFileInput');
+
+        // User management elements
+        this.closeUserModalBtn = document.getElementById('closeUserModalBtn');
+        this.userName = document.getElementById('userName');
+        this.userEmail = document.getElementById('userEmail');
+        this.userRole = document.getElementById('userRole');
+        this.addUserBtn = document.getElementById('addUserBtn');
+        this.usersContainer = document.getElementById('usersContainer');
+
+        // Attendee selection elements
+        this.selectedAttendees = document.getElementById('selectedAttendees');
+        this.selectAttendeesBtn = document.getElementById('selectAttendeesBtn');
+        this.attendeesDropdown = document.getElementById('attendeesDropdown');
+        this.attendeeSearch = document.getElementById('attendeeSearch');
+        this.attendeesList = document.getElementById('attendeesList');
 
         // Template buttons
         this.templateButtons = document.querySelectorAll('.btn-template');
@@ -74,13 +92,37 @@ class MeetingNotesApp {
         this.statsBtn.addEventListener('click', () => this.showStats());
         this.closeStatsBtn.addEventListener('click', () => this.hideStats());
         this.voiceBtn.addEventListener('click', () => this.toggleVoiceRecognition());
+        this.manageUsersBtn.addEventListener('click', () => this.showUserModal());
+        this.emailSummaryBtn.addEventListener('click', () => this.generateEmailSummary());
+
+        // User management listeners
+        this.closeUserModalBtn.addEventListener('click', () => this.hideUserModal());
+        this.addUserBtn.addEventListener('click', () => this.addUser());
+        this.userModal.addEventListener('click', (e) => {
+            if (e.target === this.userModal) {
+                this.hideUserModal();
+            }
+        });
+
+        // Attendee selection listeners
+        this.selectAttendeesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleAttendeeDropdown();
+        });
+        this.attendeeSearch.addEventListener('input', (e) => this.filterAttendees(e.target.value));
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.attendeesDropdown.contains(e.target) && e.target !== this.selectAttendeesBtn) {
+                this.attendeesDropdown.classList.add('hidden');
+            }
+        });
 
         // Auto-save on input changes
         this.meetingTitle.addEventListener('input', () => this.saveMeetingInfo());
         this.meetingType.addEventListener('change', () => this.saveMeetingInfo());
         this.meetingDate.addEventListener('change', () => this.saveMeetingInfo());
         this.meetingEndDate.addEventListener('change', () => this.saveMeetingInfo());
-        this.meetingAttendees.addEventListener('input', () => this.saveMeetingInfo());
         this.meetingTags.addEventListener('input', () => this.saveMeetingInfo());
         this.meetingLocation.addEventListener('input', () => this.saveMeetingInfo());
 
@@ -132,6 +174,15 @@ class MeetingNotesApp {
         localStorage.setItem('meetingNotes', JSON.stringify(this.meetings));
     }
 
+    loadUsers() {
+        const stored = localStorage.getItem('staffMembers');
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    saveUsers() {
+        localStorage.setItem('staffMembers', JSON.stringify(this.users));
+    }
+
     loadTheme() {
         const theme = localStorage.getItem('theme') || 'light';
         if (theme === 'dark') {
@@ -157,7 +208,7 @@ class MeetingNotesApp {
             meetingType: '',
             date: now.toISOString().slice(0, 16),
             endDate: endTime.toISOString().slice(0, 16),
-            attendees: '',
+            attendeeIds: [],
             location: '',
             tags: '',
             notes: [],
@@ -196,7 +247,19 @@ class MeetingNotesApp {
         if (this.searchQuery) {
             filtered = filtered.filter(meeting => {
                 const titleMatch = meeting.title.toLowerCase().includes(this.searchQuery);
-                const attendeesMatch = meeting.attendees.toLowerCase().includes(this.searchQuery);
+
+                // Handle both old attendees string and new attendeeIds array
+                let attendeesMatch = false;
+                if (meeting.attendees) {
+                    attendeesMatch = meeting.attendees.toLowerCase().includes(this.searchQuery);
+                } else if (meeting.attendeeIds && meeting.attendeeIds.length > 0) {
+                    const attendeeNames = meeting.attendeeIds
+                        .map(id => this.users.find(u => u.id === id))
+                        .filter(u => u)
+                        .map(u => u.name.toLowerCase());
+                    attendeesMatch = attendeeNames.some(name => name.includes(this.searchQuery));
+                }
+
                 const tagsMatch = meeting.tags.toLowerCase().includes(this.searchQuery);
                 const notesMatch = meeting.notes.some(note =>
                     note.content.toLowerCase().includes(this.searchQuery)
@@ -284,13 +347,28 @@ class MeetingNotesApp {
             const meetingTypeDisplay = meeting.meetingType ?
                 meeting.meetingType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : '';
 
+            // Get attendee names from IDs
+            let attendeesDisplay = '';
+            if (meeting.attendeeIds && meeting.attendeeIds.length > 0) {
+                const attendeeNames = meeting.attendeeIds
+                    .map(id => this.users.find(u => u.id === id))
+                    .filter(u => u)
+                    .map(u => u.name);
+                if (attendeeNames.length > 0) {
+                    attendeesDisplay = attendeeNames.join(', ');
+                }
+            } else if (meeting.attendees) {
+                // Fallback for old format
+                attendeesDisplay = meeting.attendees;
+            }
+
             return `
                 <div class="meeting-card" onclick="app.showMeetingEditor('${meeting.id}')">
                     <h3>${this.escapeHtml(meeting.title)}</h3>
                     ${meetingTypeDisplay ? `<div class="meeting-type-badge">📋 ${meetingTypeDisplay}</div>` : ''}
                     <div class="meeting-card-meta">
                         <span>📅 ${formattedDate}</span>
-                        ${meeting.attendees ? `<span>👥 ${this.escapeHtml(meeting.attendees)}</span>` : ''}
+                        ${attendeesDisplay ? `<span>👥 ${this.escapeHtml(attendeesDisplay)}</span>` : ''}
                         ${meeting.location ? `<span>📍 ${this.escapeHtml(meeting.location)}</span>` : ''}
                     </div>
                     ${tags.length > 0 ? `
@@ -319,9 +397,11 @@ class MeetingNotesApp {
         this.meetingType.value = meeting.meetingType || '';
         this.meetingDate.value = meeting.date;
         this.meetingEndDate.value = meeting.endDate || meeting.date;
-        this.meetingAttendees.value = meeting.attendees || '';
         this.meetingTags.value = meeting.tags || '';
         this.meetingLocation.value = meeting.location || '';
+
+        // Render selected attendees
+        this.renderSelectedAttendees();
 
         // Render notes
         this.renderNotes(meeting);
@@ -481,9 +561,20 @@ class MeetingNotesApp {
         if (meeting.location) {
             text += `Location: ${meeting.location}\n`;
         }
-        if (meeting.attendees) {
+
+        // Handle both new and old attendee format
+        if (meeting.attendeeIds && meeting.attendeeIds.length > 0) {
+            const attendees = meeting.attendeeIds
+                .map(id => this.users.find(u => u.id === id))
+                .filter(u => u);
+            if (attendees.length > 0) {
+                const attendeeNames = attendees.map(u => `${u.name} (${u.email})`).join(', ');
+                text += `Attendees: ${attendeeNames}\n`;
+            }
+        } else if (meeting.attendees) {
             text += `Attendees: ${meeting.attendees}\n`;
         }
+
         if (meeting.tags) {
             text += `Tags: ${meeting.tags}\n`;
         }
@@ -552,7 +643,16 @@ class MeetingNotesApp {
             ics += `LOCATION:${this.escapeIcs(meeting.location)}\r\n`;
         }
 
-        if (meeting.attendees) {
+        // Add attendees - handle both new and old format
+        if (meeting.attendeeIds && meeting.attendeeIds.length > 0) {
+            const attendees = meeting.attendeeIds
+                .map(id => this.users.find(u => u.id === id))
+                .filter(u => u);
+            attendees.forEach(attendee => {
+                ics += `ATTENDEE;CN=${this.escapeIcs(attendee.name)}:mailto:${attendee.email}\r\n`;
+            });
+        } else if (meeting.attendees) {
+            // Fallback for old format
             const attendeeList = meeting.attendees.split(',').map(a => a.trim());
             attendeeList.forEach(attendee => {
                 ics += `ATTENDEE:CN=${this.escapeIcs(attendee)}\r\n`;
@@ -599,9 +699,10 @@ class MeetingNotesApp {
         const meeting = {
             id: Date.now().toString(),
             title: 'Imported Meeting',
+            meetingType: '',
             date: new Date().toISOString().slice(0, 16),
             endDate: new Date().toISOString().slice(0, 16),
-            attendees: '',
+            attendeeIds: [],
             location: '',
             tags: 'imported',
             notes: [],
@@ -611,6 +712,7 @@ class MeetingNotesApp {
 
         let inEvent = false;
         let description = '';
+        let attendeeNames = []; // Store names temporarily for old format
 
         for (let line of lines) {
             line = line.trim();
@@ -635,10 +737,20 @@ class MeetingNotesApp {
                 } else if (line.startsWith('ATTENDEE')) {
                     const match = line.match(/CN=([^:;]+)/);
                     if (match) {
-                        meeting.attendees += (meeting.attendees ? ', ' : '') + match[1];
+                        attendeeNames.push(match[1]);
                     }
                 }
             }
+        }
+
+        // Try to match imported attendees with existing users
+        if (attendeeNames.length > 0) {
+            attendeeNames.forEach(name => {
+                const user = this.users.find(u => u.name.toLowerCase() === name.toLowerCase());
+                if (user && !meeting.attendeeIds.includes(user.id)) {
+                    meeting.attendeeIds.push(user.id);
+                }
+            });
         }
 
         // Convert description to notes if present
@@ -996,6 +1108,304 @@ class MeetingNotesApp {
         this.noteInput.value = currentText ? currentText + '\n\n' + templateText : templateText;
         this.noteInput.focus();
         this.noteInput.scrollTop = this.noteInput.scrollHeight;
+    }
+
+    // User Management Methods
+    showUserModal() {
+        this.renderUsers();
+        this.userModal.classList.remove('hidden');
+    }
+
+    hideUserModal() {
+        this.userModal.classList.add('hidden');
+        this.userName.value = '';
+        this.userEmail.value = '';
+        this.userRole.value = '';
+    }
+
+    addUser() {
+        const name = this.userName.value.trim();
+        const email = this.userEmail.value.trim();
+        const role = this.userRole.value.trim();
+
+        if (!name) {
+            alert('Please enter a name');
+            return;
+        }
+
+        if (!email) {
+            alert('Please enter an email');
+            return;
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        const user = {
+            id: Date.now().toString(),
+            name: name,
+            email: email,
+            role: role || 'Staff'
+        };
+
+        this.users.push(user);
+        this.saveUsers();
+        this.renderUsers();
+
+        // Clear form
+        this.userName.value = '';
+        this.userEmail.value = '';
+        this.userRole.value = '';
+        this.userName.focus();
+    }
+
+    deleteUser(userId) {
+        if (!confirm('Delete this staff member? They will be removed from all meetings.')) return;
+
+        this.users = this.users.filter(u => u.id !== userId);
+        this.saveUsers();
+
+        // Remove user from all meetings
+        this.meetings.forEach(meeting => {
+            if (meeting.attendeeIds && meeting.attendeeIds.includes(userId)) {
+                meeting.attendeeIds = meeting.attendeeIds.filter(id => id !== userId);
+            }
+        });
+        this.saveMeetings();
+
+        this.renderUsers();
+
+        // Update current meeting editor if open
+        if (this.currentMeetingId) {
+            this.renderSelectedAttendees();
+        }
+    }
+
+    renderUsers() {
+        if (this.users.length === 0) {
+            this.usersContainer.innerHTML = '<p style="color: var(--text-tertiary); text-align: center; padding: 20px;">No staff members yet. Add your first staff member above.</p>';
+            return;
+        }
+
+        this.usersContainer.innerHTML = this.users.map(user => `
+            <div class="user-item">
+                <div class="user-info">
+                    <div class="user-name">${this.escapeHtml(user.name)}</div>
+                    <div class="user-details">
+                        <span>📧 ${this.escapeHtml(user.email)}</span>
+                        ${user.role ? `<span>• ${this.escapeHtml(user.role)}</span>` : ''}
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="app.deleteUser('${user.id}')">Delete</button>
+            </div>
+        `).join('');
+    }
+
+    // Attendee Selection Methods
+    toggleAttendeeDropdown() {
+        const isHidden = this.attendeesDropdown.classList.contains('hidden');
+        if (isHidden) {
+            this.renderAttendeesList();
+            this.attendeesDropdown.classList.remove('hidden');
+            this.attendeeSearch.focus();
+        } else {
+            this.attendeesDropdown.classList.add('hidden');
+        }
+    }
+
+    renderAttendeesList(searchQuery = '') {
+        if (this.users.length === 0) {
+            this.attendeesList.innerHTML = '<p style="padding: 12px; color: var(--text-tertiary); text-align: center;">No staff members available. Add staff members first.</p>';
+            return;
+        }
+
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting) return;
+
+        // Ensure attendeeIds exists
+        if (!meeting.attendeeIds) {
+            meeting.attendeeIds = [];
+        }
+
+        // Filter users by search query
+        const filteredUsers = this.users.filter(user =>
+            user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (user.role && user.role.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+
+        if (filteredUsers.length === 0) {
+            this.attendeesList.innerHTML = '<p style="padding: 12px; color: var(--text-tertiary); text-align: center;">No matching staff members found.</p>';
+            return;
+        }
+
+        this.attendeesList.innerHTML = filteredUsers.map(user => {
+            const isSelected = meeting.attendeeIds.includes(user.id);
+            return `
+                <div class="attendee-option" onclick="app.toggleAttendee('${user.id}')">
+                    <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="event.stopPropagation(); app.toggleAttendee('${user.id}')">
+                    <div class="attendee-info">
+                        <div class="attendee-name">${this.escapeHtml(user.name)}</div>
+                        <div class="attendee-email">${this.escapeHtml(user.email)}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    filterAttendees(searchQuery) {
+        this.renderAttendeesList(searchQuery);
+    }
+
+    toggleAttendee(userId) {
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting) return;
+
+        // Ensure attendeeIds exists
+        if (!meeting.attendeeIds) {
+            meeting.attendeeIds = [];
+        }
+
+        const index = meeting.attendeeIds.indexOf(userId);
+        if (index > -1) {
+            meeting.attendeeIds.splice(index, 1);
+        } else {
+            meeting.attendeeIds.push(userId);
+        }
+
+        meeting.updatedAt = new Date().toISOString();
+        this.saveMeetings();
+
+        this.renderSelectedAttendees();
+        this.renderAttendeesList(this.attendeeSearch.value);
+    }
+
+    removeAttendee(userId) {
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting) return;
+
+        meeting.attendeeIds = meeting.attendeeIds.filter(id => id !== userId);
+        meeting.updatedAt = new Date().toISOString();
+        this.saveMeetings();
+
+        this.renderSelectedAttendees();
+        if (!this.attendeesDropdown.classList.contains('hidden')) {
+            this.renderAttendeesList(this.attendeeSearch.value);
+        }
+    }
+
+    renderSelectedAttendees() {
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting || !meeting.attendeeIds || meeting.attendeeIds.length === 0) {
+            this.selectedAttendees.innerHTML = '<p style="color: var(--text-tertiary); margin: 0; font-size: 14px;">No staff selected</p>';
+            return;
+        }
+
+        const selectedUsers = meeting.attendeeIds
+            .map(id => this.users.find(u => u.id === id))
+            .filter(u => u); // Filter out undefined (deleted users)
+
+        if (selectedUsers.length === 0) {
+            this.selectedAttendees.innerHTML = '<p style="color: var(--text-tertiary); margin: 0; font-size: 14px;">No staff selected</p>';
+            return;
+        }
+
+        this.selectedAttendees.innerHTML = selectedUsers.map(user => `
+            <div class="attendee-chip">
+                <span>${this.escapeHtml(user.name)}</span>
+                <button class="chip-remove" onclick="app.removeAttendee('${user.id}')" title="Remove">✕</button>
+            </div>
+        `).join('');
+    }
+
+    // Email Summary Generation
+    generateEmailSummary() {
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting) return;
+
+        if (!meeting.attendeeIds || meeting.attendeeIds.length === 0) {
+            alert('Please select at least one attendee to send the email summary.');
+            return;
+        }
+
+        const selectedUsers = meeting.attendeeIds
+            .map(id => this.users.find(u => u.id === id))
+            .filter(u => u);
+
+        if (selectedUsers.length === 0) {
+            alert('No valid attendees found. Please check your staff list.');
+            return;
+        }
+
+        // Get attendee emails
+        const emails = selectedUsers.map(u => u.email).join(',');
+
+        // Format meeting details
+        const date = new Date(meeting.date);
+        const endDate = new Date(meeting.endDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const formattedEndDate = endDate.toLocaleDateString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Build email subject
+        const subject = `Meeting Summary: ${meeting.title}`;
+
+        // Build email body
+        let body = `Meeting Summary\n\n`;
+        body += `Title: ${meeting.title}\n`;
+        if (meeting.meetingType) {
+            const meetingTypeDisplay = meeting.meetingType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            body += `Type: ${meetingTypeDisplay}\n`;
+        }
+        body += `Date: ${formattedDate} - ${formattedEndDate}\n`;
+        if (meeting.location) {
+            body += `Location: ${meeting.location}\n`;
+        }
+        body += `Attendees: ${selectedUsers.map(u => u.name).join(', ')}\n`;
+        if (meeting.tags) {
+            body += `Tags: ${meeting.tags}\n`;
+        }
+        body += `\n`;
+
+        if (meeting.notes.length > 0) {
+            body += `Notes:\n${'─'.repeat(50)}\n\n`;
+
+            meeting.notes.forEach(note => {
+                const timestamp = new Date(note.timestamp);
+                const time = timestamp.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                if (note.isActionItem) {
+                    body += `⚡ [ACTION ITEM] `;
+                }
+                body += `[${time}] ${note.content}\n\n`;
+            });
+        } else {
+            body += `No notes recorded for this meeting.\n`;
+        }
+
+        body += `\n\n---\n`;
+        body += `This summary was generated by the Housekeeping Manager Notes App`;
+
+        // Create mailto link
+        const mailtoLink = `mailto:${emails}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        // Open email client
+        window.location.href = mailtoLink;
     }
 
     render() {

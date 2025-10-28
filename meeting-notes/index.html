@@ -13,6 +13,9 @@
                 <h1>🏨 Housekeeping Manager Notes</h1>
             </div>
             <div class="header-right">
+                <button id="manageUsersBtn" class="btn btn-icon" title="Manage Staff">
+                    <span class="icon">👥</span>
+                </button>
                 <button id="statsBtn" class="btn btn-icon" title="Statistics">
                     <span class="icon">📊</span>
                 </button>
@@ -31,6 +34,38 @@
                     <button id="closeStatsBtn" class="btn-close">✕</button>
                 </div>
                 <div id="statsContent" class="stats-grid"></div>
+            </div>
+        </div>
+
+        <!-- User Management Modal -->
+        <div id="userModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>👥 Manage Staff Members</h2>
+                    <button id="closeUserModalBtn" class="btn-close">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="user-form">
+                        <h3>Add New Staff Member</h3>
+                        <div class="form-group">
+                            <label for="userName">Name:</label>
+                            <input type="text" id="userName" placeholder="e.g., Maria Garcia">
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email:</label>
+                            <input type="email" id="userEmail" placeholder="e.g., maria@hotel.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="userRole">Role:</label>
+                            <input type="text" id="userRole" placeholder="e.g., Room Attendant, Supervisor">
+                        </div>
+                        <button id="addUserBtn" class="btn btn-primary">Add Staff Member</button>
+                    </div>
+                    <div class="users-list">
+                        <h3>Current Staff Members</h3>
+                        <div id="usersContainer"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -73,6 +108,9 @@
                     <button id="backBtn" class="btn btn-secondary">← Back to List</button>
                 </div>
                 <div class="editor-header-right">
+                    <button id="emailSummaryBtn" class="btn btn-secondary" title="Email Summary to Attendees">
+                        <span class="icon">📧</span> Email Summary
+                    </button>
                     <button id="exportTxtBtn" class="btn btn-secondary" title="Export as Text">
                         <span class="icon">📄</span> Export TXT
                     </button>
@@ -123,7 +161,20 @@
                 <div class="info-row">
                     <div class="info-item">
                         <label for="meetingAttendees">👥 Staff/Attendees:</label>
-                        <input type="text" id="meetingAttendees" placeholder="e.g., Maria, John, Lisa">
+                        <div class="attendees-selector">
+                            <div id="selectedAttendees" class="selected-attendees"></div>
+                            <div class="attendees-dropdown">
+                                <button type="button" id="selectAttendeesBtn" class="btn btn-secondary select-btn">
+                                    + Select Staff
+                                </button>
+                                <div id="attendeesDropdown" class="dropdown-menu hidden">
+                                    <div class="dropdown-search">
+                                        <input type="text" id="attendeeSearch" placeholder="Search staff...">
+                                    </div>
+                                    <div id="attendeesList" class="attendees-list-dropdown"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="info-item">
                         <label for="meetingLocation">📍 Location/Area:</label>
