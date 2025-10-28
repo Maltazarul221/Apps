@@ -13,13 +13,6 @@
                 <h1>🏨 Housekeeping Manager Notes</h1>
             </div>
             <div class="header-right">
-                <div id="loginStatus" class="login-status">
-                    <button id="loginBtn" class="btn btn-secondary">🔐 Login</button>
-                    <div id="loggedInUser" class="logged-in-user hidden">
-                        <span id="userEmailDisplay" class="user-email"></span>
-                        <button id="logoutBtn" class="btn btn-icon btn-sm" title="Logout">🚪</button>
-                    </div>
-                </div>
                 <button id="manageUsersBtn" class="btn btn-icon" title="Manage Staff">
                     <span class="icon">👥</span>
                 </button>
@@ -71,62 +64,6 @@
                     <div class="users-list">
                         <h3>Current Staff Members</h3>
                         <div id="usersContainer"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Login Modal -->
-        <div id="loginModal" class="modal hidden">
-            <div class="modal-content modal-small">
-                <div class="modal-header">
-                    <h2>🔐 Login to Send Emails</h2>
-                    <button id="closeLoginModalBtn" class="btn-close">✕</button>
-                </div>
-                <div class="modal-body">
-                    <div class="login-form">
-                        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                            Login to send emails directly from the app. You'll need to configure EmailJS first.
-                        </p>
-                        <div class="form-group">
-                            <label for="loginEmail">Email Address:</label>
-                            <input type="email" id="loginEmail" placeholder="your.email@example.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="loginName">Your Name:</label>
-                            <input type="text" id="loginName" placeholder="Your Full Name" required>
-                        </div>
-
-                        <div class="divider">EmailJS Configuration</div>
-
-                        <div class="form-group">
-                            <label for="emailjsServiceId">Service ID:</label>
-                            <input type="text" id="emailjsServiceId" placeholder="service_xxxxxxx">
-                            <small>Get this from your EmailJS dashboard</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="emailjsTemplateId">Template ID:</label>
-                            <input type="text" id="emailjsTemplateId" placeholder="template_xxxxxxx">
-                            <small>Create a template in EmailJS</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="emailjsPublicKey">Public Key:</label>
-                            <input type="text" id="emailjsPublicKey" placeholder="Your EmailJS public key">
-                            <small>Found in Account > API Keys</small>
-                        </div>
-
-                        <div class="info-box">
-                            <strong>📝 Setup Instructions:</strong>
-                            <ol>
-                                <li>Sign up at <a href="https://www.emailjs.com/" target="_blank">EmailJS.com</a></li>
-                                <li>Create an Email Service (Gmail, Outlook, etc.)</li>
-                                <li>Create an Email Template with variables: {{to_email}}, {{to_name}}, {{subject}}, {{message}}</li>
-                                <li>Copy your Service ID, Template ID, and Public Key</li>
-                                <li>Paste them above and login</li>
-                            </ol>
-                        </div>
-
-                        <button id="loginSubmitBtn" class="btn btn-primary btn-block">Login & Save</button>
                     </div>
                 </div>
             </div>
@@ -293,9 +230,6 @@
 
     <!-- Hidden file input for ICS import -->
     <input type="file" id="icsFileInput" accept=".ics" style="display: none;">
-
-    <!-- EmailJS Library -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <script src="app.js"></script>
 </body>
