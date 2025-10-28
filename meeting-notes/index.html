@@ -2,8 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meeting Notes App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Housekeeping Manager Notes</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional meeting notes app for housekeeping managers with voice transcription and email summaries">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="HK Notes">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-96.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -232,5 +246,60 @@
     <input type="file" id="icsFileInput" accept=".ics" style="display: none;">
 
     <script src="app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/meeting-notes/service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA install prompt available');
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Show install button or notification
+            showInstallPromotion();
+        });
+
+        function showInstallPromotion() {
+            // Check if already shown
+            if (localStorage.getItem('pwaInstallPromptShown')) {
+                return;
+            }
+
+            // Show a subtle notification that the app can be installed
+            setTimeout(() => {
+                if (deferredPrompt && confirm('📱 Install Housekeeping Manager Notes on your device for easy access?\n\nYou can use it offline and access it like a native app!')) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                        localStorage.setItem('pwaInstallPromptShown', 'true');
+                    });
+                } else {
+                    localStorage.setItem('pwaInstallPromptShown', 'true');
+                }
+            }, 5000); // Show after 5 seconds
+        }
+
+        // Track when PWA is installed
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA was installed successfully');
+        });
+    </script>
 </body>
 </html>
