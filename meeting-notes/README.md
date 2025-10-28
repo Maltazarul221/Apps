@@ -1,13 +1,23 @@
-# Meeting Notes App - Enhanced Version
+# Housekeeping Manager Notes App - Enhanced Version
 
-A powerful, feature-rich web application for taking professional notes during meetings. Built with vanilla JavaScript, HTML, and CSS - no dependencies required.
+A powerful, feature-rich web application specifically designed for housekeeping managers to take professional notes during daily briefings, inspections, and staff meetings. Built with vanilla JavaScript, HTML, and CSS - no dependencies required.
 
 ## Features
 
+### Housekeeping-Specific Features
+- **Meeting Types**: Select from 12 predefined meeting types including Daily Briefings, Room Inspections, Staff Training, Maintenance Reviews, and more
+- **Quick Templates**: One-click templates for common housekeeping tasks:
+  - Room Inspection Checklist
+  - Supply Inventory Check
+  - Maintenance Issue Reporting
+  - Staff Notes
+- **Filter by Meeting Type**: Quickly find all inspections, briefings, or any specific meeting type
+- **Housekeeping-Optimized Labels**: Staff/Attendees, Location/Area fields tailored for housekeeping operations
+
 ### Core Functionality
-- **Create & Manage Meetings**: Full meeting details including title, dates, attendees, location, and tags
+- **Create & Manage Sessions**: Full session details including title, type, dates, staff, location, and tags
 - **Timestamped Notes**: All notes automatically get timestamped for easy reference
-- **Action Items**: Mark important notes as action items with special highlighting
+- **Action Items**: Mark important notes as action items for follow-up tracking
 - **Auto-Save**: All changes are automatically saved to browser local storage
 - **Edit Notes**: Click the edit button on any note to modify it
 - **Note Editing**: Full support for editing existing notes with visual feedback
@@ -46,14 +56,36 @@ A powerful, feature-rich web application for taking professional notes during me
 
 ### Quick Start Guide
 
-#### Creating a New Meeting
+#### Creating a New Session
 
-1. Click the "+ New Meeting" button in the header
-2. Enter the meeting title
-3. Set the start and end date/time (defaults to current time + 1 hour)
-4. Add attendees (comma-separated names)
-5. Add tags for organization (e.g., "sprint-planning, review")
-6. Add the meeting location or video call link
+1. Click the "+ New Session" button in the header
+2. Enter the session title (e.g., "Morning Briefing - Floor 3", "Room 305 Inspection")
+3. **Select Meeting Type** from the dropdown:
+   - Daily Briefing
+   - Room Inspection
+   - Staff Training
+   - Maintenance Review
+   - Supply Inventory
+   - Guest Issues/Complaints
+   - Quality Assurance
+   - Safety Meeting
+   - Shift Planning
+   - Department Meeting
+   - Performance Review
+   - Emergency Response
+   - Other
+4. Set the start and end date/time (defaults to current time + 1 hour)
+5. Add staff/attendees (e.g., "Maria, John, Lisa")
+6. Add the location or area (e.g., "Floor 3", "Housekeeping Office")
+7. Add tags for organization (e.g., "urgent, follow-up, maintenance")
+
+#### Using Quick Templates
+
+After creating a session, use the quick template buttons to insert pre-formatted checklists:
+- **Room Checklist**: Complete room inspection checklist
+- **Supply List**: Inventory tracking template
+- **Maintenance Items**: Issue reporting template
+- **Staff Issues**: Staff notes and follow-up template
 
 #### Taking Notes
 
@@ -73,17 +105,18 @@ A powerful, feature-rich web application for taking professional notes during me
 5. The recording indicator shows when the system is actively listening
 6. Grant microphone permissions when prompted by your browser
 
-#### Managing Meetings
+#### Managing Sessions
 
-- **View All Meetings**: Click "← Back to List" to see all your meetings
-- **Search**: Use the search bar to find meetings and notes
-- **Filter**: Use dropdown filters to narrow down meetings
-- **Sort**: Change sort order using the sort dropdown
-- **Edit Meeting**: Click on any meeting card to open and edit it
-- **Delete Meeting**: Click "Delete Meeting" to remove the entire meeting
-- **Export TXT**: Download meeting notes as a text file
-- **Export .ICS**: Export meeting to calendar format
-- **Import .ICS**: Import calendar events as meetings
+- **View All Sessions**: Click "← Back to List" to see all your sessions
+- **Search**: Use the search bar to find sessions by title, staff names, notes content
+- **Filter by Type**: Use dropdown to filter by meeting type (e.g., all Daily Briefings, Room Inspections)
+- **Filter by Date**: Filter by today, this week, or this month
+- **Sort**: Change sort order (most recent, oldest, title, note count)
+- **Edit Session**: Click on any session card to open and edit it
+- **Delete Session**: Click "Delete Meeting" to remove the entire session
+- **Export TXT**: Download session notes as a text file for records
+- **Export .ICS**: Export session to calendar format for scheduling
+- **Import .ICS**: Import calendar events as sessions
 
 #### Using Dark Mode
 

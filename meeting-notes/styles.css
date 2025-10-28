@@ -386,6 +386,17 @@ header {
     margin-right: 5px;
 }
 
+.meeting-type-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 8px 0 12px 0;
+}
+
 .empty-state {
     text-align: center;
     padding: 80px 20px;
@@ -485,6 +496,76 @@ header {
 .info-item input:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Meeting Type Section */
+.meeting-type-section {
+    margin-bottom: 20px;
+}
+
+.meeting-type-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.meeting-type-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.meeting-type-select option {
+    padding: 10px;
+}
+
+/* Quick Templates */
+.quick-templates {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.quick-templates label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    letter-spacing: 0.3px;
+}
+
+.template-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-template {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-template:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-template:active {
+    transform: translateY(0);
 }
 
 /* Notes Section */
