@@ -3,6 +3,7 @@ class MeetingNotesApp {
     constructor() {
         this.meetings = this.loadMeetings();
         this.users = this.loadUsers();
+        this.loginData = this.loadLoginData();
         this.currentMeetingId = null;
         this.currentEditingNoteIndex = null;
         this.searchQuery = '';
@@ -16,6 +17,8 @@ class MeetingNotesApp {
         this.attachEventListeners();
         this.loadTheme();
         this.initializeVoiceRecognition();
+        this.initializeEmailJS();
+        this.updateLoginDisplay();
         this.render();
     }
 
@@ -34,6 +37,8 @@ class MeetingNotesApp {
         this.voiceBtn = document.getElementById('voiceBtn');
         this.manageUsersBtn = document.getElementById('manageUsersBtn');
         this.emailSummaryBtn = document.getElementById('emailSummaryBtn');
+        this.loginBtn = document.getElementById('loginBtn');
+        this.logoutBtn = document.getElementById('logoutBtn');
 
         // Views
         this.meetingList = document.getElementById('meetingList');
@@ -44,6 +49,9 @@ class MeetingNotesApp {
         this.voiceStatus = document.getElementById('voiceStatus');
         this.voiceStatusText = document.getElementById('voiceStatusText');
         this.userModal = document.getElementById('userModal');
+        this.loginModal = document.getElementById('loginModal');
+        this.loggedInUser = document.getElementById('loggedInUser');
+        this.userEmailDisplay = document.getElementById('userEmailDisplay');
 
         // Inputs
         this.meetingTitle = document.getElementById('meetingTitle');
@@ -75,6 +83,15 @@ class MeetingNotesApp {
         this.attendeeSearch = document.getElementById('attendeeSearch');
         this.attendeesList = document.getElementById('attendeesList');
 
+        // Login form elements
+        this.closeLoginModalBtn = document.getElementById('closeLoginModalBtn');
+        this.loginEmail = document.getElementById('loginEmail');
+        this.loginName = document.getElementById('loginName');
+        this.emailjsServiceId = document.getElementById('emailjsServiceId');
+        this.emailjsTemplateId = document.getElementById('emailjsTemplateId');
+        this.emailjsPublicKey = document.getElementById('emailjsPublicKey');
+        this.loginSubmitBtn = document.getElementById('loginSubmitBtn');
+
         // Template buttons
         this.templateButtons = document.querySelectorAll('.btn-template');
     }
@@ -94,6 +111,17 @@ class MeetingNotesApp {
         this.voiceBtn.addEventListener('click', () => this.toggleVoiceRecognition());
         this.manageUsersBtn.addEventListener('click', () => this.showUserModal());
         this.emailSummaryBtn.addEventListener('click', () => this.generateEmailSummary());
+        this.loginBtn.addEventListener('click', () => this.showLoginModal());
+        this.logoutBtn.addEventListener('click', () => this.logout());
+
+        // Login modal listeners
+        this.closeLoginModalBtn.addEventListener('click', () => this.hideLoginModal());
+        this.loginSubmitBtn.addEventListener('click', () => this.login());
+        this.loginModal.addEventListener('click', (e) => {
+            if (e.target === this.loginModal) {
+                this.hideLoginModal();
+            }
+        });
 
         // User management listeners
         this.closeUserModalBtn.addEventListener('click', () => this.hideUserModal());
@@ -181,6 +209,15 @@ class MeetingNotesApp {
 
     saveUsers() {
         localStorage.setItem('staffMembers', JSON.stringify(this.users));
+    }
+
+    loadLoginData() {
+        const stored = localStorage.getItem('loginData');
+        return stored ? JSON.parse(stored) : null;
+    }
+
+    saveLoginData(data) {
+        localStorage.setItem('loginData', JSON.stringify(data));
     }
 
     loadTheme() {
@@ -1327,6 +1364,13 @@ class MeetingNotesApp {
         const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
         if (!meeting) return;
 
+        // Use EmailJS if logged in, otherwise use mailto
+        if (this.loginData && this.loginData.email) {
+            this.sendEmailWithEmailJS(meeting);
+            return;
+        }
+
+        // Fallback to mailto if not logged in
         if (!meeting.attendeeIds || meeting.attendeeIds.length === 0) {
             alert('Please select at least one attendee to send the email summary.');
             return;
@@ -1338,6 +1382,12 @@ class MeetingNotesApp {
 
         if (selectedUsers.length === 0) {
             alert('No valid attendees found. Please check your staff list.');
+            return;
+        }
+
+        // Show option to login or use mailto
+        if (confirm('You are not logged in. Click OK to login and send emails directly from the app, or Cancel to use your email client (mailto).')) {
+            this.showLoginModal();
             return;
         }
 
@@ -1406,6 +1456,218 @@ class MeetingNotesApp {
 
         // Open email client
         window.location.href = mailtoLink;
+    }
+
+    // Login/Logout Methods
+    showLoginModal() {
+        // Pre-fill if login data exists
+        if (this.loginData) {
+            this.loginEmail.value = this.loginData.email || '';
+            this.loginName.value = this.loginData.name || '';
+            this.emailjsServiceId.value = this.loginData.serviceId || '';
+            this.emailjsTemplateId.value = this.loginData.templateId || '';
+            this.emailjsPublicKey.value = this.loginData.publicKey || '';
+        }
+        this.loginModal.classList.remove('hidden');
+    }
+
+    hideLoginModal() {
+        this.loginModal.classList.add('hidden');
+    }
+
+    login() {
+        const email = this.loginEmail.value.trim();
+        const name = this.loginName.value.trim();
+        const serviceId = this.emailjsServiceId.value.trim();
+        const templateId = this.emailjsTemplateId.value.trim();
+        const publicKey = this.emailjsPublicKey.value.trim();
+
+        if (!email) {
+            alert('Please enter your email address');
+            return;
+        }
+
+        if (!name) {
+            alert('Please enter your name');
+            return;
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        if (!serviceId || !templateId || !publicKey) {
+            alert('Please enter all EmailJS configuration details (Service ID, Template ID, and Public Key)');
+            return;
+        }
+
+        // Save login data
+        this.loginData = {
+            email: email,
+            name: name,
+            serviceId: serviceId,
+            templateId: templateId,
+            publicKey: publicKey
+        };
+
+        this.saveLoginData(this.loginData);
+        this.initializeEmailJS();
+        this.updateLoginDisplay();
+        this.hideLoginModal();
+
+        alert('Login successful! You can now send emails directly from the app.');
+    }
+
+    logout() {
+        if (!confirm('Logout? Your EmailJS configuration will be removed from this device.')) return;
+
+        this.loginData = null;
+        localStorage.removeItem('loginData');
+        this.updateLoginDisplay();
+
+        alert('Logged out successfully');
+    }
+
+    updateLoginDisplay() {
+        if (this.loginData && this.loginData.email) {
+            this.loginBtn.classList.add('hidden');
+            this.loggedInUser.classList.remove('hidden');
+            this.userEmailDisplay.textContent = this.loginData.email;
+        } else {
+            this.loginBtn.classList.remove('hidden');
+            this.loggedInUser.classList.add('hidden');
+            this.userEmailDisplay.textContent = '';
+        }
+    }
+
+    // EmailJS Integration
+    initializeEmailJS() {
+        if (this.loginData && this.loginData.publicKey && typeof emailjs !== 'undefined') {
+            try {
+                emailjs.init(this.loginData.publicKey);
+                console.log('EmailJS initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize EmailJS:', error);
+            }
+        }
+    }
+
+    // Updated Email Summary Generation (using EmailJS)
+    async sendEmailWithEmailJS(meeting) {
+        if (!this.loginData || !this.loginData.email) {
+            alert('Please login first to send emails');
+            this.showLoginModal();
+            return;
+        }
+
+        if (!meeting.attendeeIds || meeting.attendeeIds.length === 0) {
+            alert('Please select at least one attendee to send the email summary.');
+            return;
+        }
+
+        const selectedUsers = meeting.attendeeIds
+            .map(id => this.users.find(u => u.id === id))
+            .filter(u => u);
+
+        if (selectedUsers.length === 0) {
+            alert('No valid attendees found. Please check your staff list.');
+            return;
+        }
+
+        // Format meeting details
+        const date = new Date(meeting.date);
+        const endDate = new Date(meeting.endDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const formattedEndDate = endDate.toLocaleDateString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Build email subject
+        const subject = `Meeting Summary: ${meeting.title}`;
+
+        // Build email body
+        let body = `Meeting Summary\n\n`;
+        body += `Title: ${meeting.title}\n`;
+        if (meeting.meetingType) {
+            const meetingTypeDisplay = meeting.meetingType.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            body += `Type: ${meetingTypeDisplay}\n`;
+        }
+        body += `Date: ${formattedDate} - ${formattedEndDate}\n`;
+        if (meeting.location) {
+            body += `Location: ${meeting.location}\n`;
+        }
+        body += `Attendees: ${selectedUsers.map(u => u.name).join(', ')}\n`;
+        if (meeting.tags) {
+            body += `Tags: ${meeting.tags}\n`;
+        }
+        body += `\n`;
+
+        if (meeting.notes.length > 0) {
+            body += `Notes:\n${'─'.repeat(50)}\n\n`;
+
+            meeting.notes.forEach(note => {
+                const timestamp = new Date(note.timestamp);
+                const time = timestamp.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                if (note.isActionItem) {
+                    body += `⚡ [ACTION ITEM] `;
+                }
+                body += `[${time}] ${note.content}\n\n`;
+            });
+        } else {
+            body += `No notes recorded for this meeting.\n`;
+        }
+
+        body += `\n\n---\n`;
+        body += `This summary was generated by the Housekeeping Manager Notes App\n`;
+        body += `Sent by: ${this.loginData.name} (${this.loginData.email})`;
+
+        // Send email to each attendee
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const user of selectedUsers) {
+            try {
+                const templateParams = {
+                    to_email: user.email,
+                    to_name: user.name,
+                    from_name: this.loginData.name,
+                    from_email: this.loginData.email,
+                    subject: subject,
+                    message: body
+                };
+
+                await emailjs.send(
+                    this.loginData.serviceId,
+                    this.loginData.templateId,
+                    templateParams
+                );
+
+                successCount++;
+            } catch (error) {
+                console.error(`Failed to send email to ${user.email}:`, error);
+                failCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            alert(`Email summary sent successfully to ${successCount} recipient(s)${failCount > 0 ? `, ${failCount} failed` : ''}!`);
+        } else {
+            alert('Failed to send email summary. Please check your EmailJS configuration and try again.');
+        }
     }
 
     render() {
