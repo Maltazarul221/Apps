@@ -502,6 +502,81 @@ header {
     border: 1px solid var(--border-color);
 }
 
+/* Voice Controls */
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-voice {
+    background: var(--success-color);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-voice:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-voice.recording {
+    background: var(--danger-color);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.btn-voice.recording:hover {
+    background: #dc2626;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+}
+
+.voice-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: var(--action-item-bg);
+    border: 1px solid var(--action-item-border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    animation: fadeIn 0.3s ease;
+}
+
+.recording-indicator {
+    width: 10px;
+    height: 10px;
+    background: var(--danger-color);
+    border-radius: 50%;
+    animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+#voiceStatusText {
+    font-weight: 600;
+}
+
 #noteInput {
     width: 100%;
     padding: 15px;

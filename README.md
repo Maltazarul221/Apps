@@ -17,6 +17,7 @@ A powerful, feature-rich web application for taking professional notes during me
 - Delete individual notes or entire meetings
 
 #### Advanced Features
+- **Voice-to-Text**: Real-time voice transcription with auto-save mode for hands-free note-taking
 - **Dark Mode**: Beautiful dark theme with persistent preference
 - **Search**: Full-text search across meetings, notes, and tags
 - **Filtering**: Filter by date range (today/week/month) or action items
@@ -45,6 +46,7 @@ A powerful, feature-rich web application for taking professional notes during me
 3. Start taking notes!
 
 ### What's New in Version 2.0
+- 🎤 Voice-to-text transcription with auto-save mode
 - ✨ Dark mode with smooth transitions
 - 🔍 Full-text search functionality
 - 🏷️ Tags system for organization

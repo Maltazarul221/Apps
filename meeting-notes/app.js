@@ -1,4 +1,4 @@
-// Meeting Notes App - Enhanced Version
+// Meeting Notes App - Enhanced Version with Voice Recognition
 class MeetingNotesApp {
     constructor() {
         this.meetings = this.loadMeetings();
@@ -7,9 +7,14 @@ class MeetingNotesApp {
         this.searchQuery = '';
         this.sortBy = 'recent';
         this.filterBy = 'all';
+        this.recognition = null;
+        this.isRecording = false;
+        this.finalTranscript = '';
+        this.interimTranscript = '';
         this.initializeElements();
         this.attachEventListeners();
         this.loadTheme();
+        this.initializeVoiceRecognition();
         this.render();
     }
 
@@ -25,6 +30,7 @@ class MeetingNotesApp {
         this.themeToggle = document.getElementById('themeToggle');
         this.statsBtn = document.getElementById('statsBtn');
         this.closeStatsBtn = document.getElementById('closeStatsBtn');
+        this.voiceBtn = document.getElementById('voiceBtn');
 
         // Views
         this.meetingList = document.getElementById('meetingList');
@@ -32,6 +38,8 @@ class MeetingNotesApp {
         this.meetingsContainer = document.getElementById('meetingsContainer');
         this.notesContainer = document.getElementById('notesContainer');
         this.statsModal = document.getElementById('statsModal');
+        this.voiceStatus = document.getElementById('voiceStatus');
+        this.voiceStatusText = document.getElementById('voiceStatusText');
 
         // Inputs
         this.meetingTitle = document.getElementById('meetingTitle');
@@ -42,6 +50,7 @@ class MeetingNotesApp {
         this.meetingLocation = document.getElementById('meetingLocation');
         this.noteInput = document.getElementById('noteInput');
         this.isActionItem = document.getElementById('isActionItem');
+        this.autoSaveNotes = document.getElementById('autoSaveNotes');
         this.searchInput = document.getElementById('searchInput');
         this.sortBySelect = document.getElementById('sortBy');
         this.filterBySelect = document.getElementById('filterBy');
@@ -60,6 +69,7 @@ class MeetingNotesApp {
         this.themeToggle.addEventListener('click', () => this.toggleTheme());
         this.statsBtn.addEventListener('click', () => this.showStats());
         this.closeStatsBtn.addEventListener('click', () => this.hideStats());
+        this.voiceBtn.addEventListener('click', () => this.toggleVoiceRecognition());
 
         // Auto-save on input changes
         this.meetingTitle.addEventListener('input', () => this.saveMeetingInfo());
@@ -742,6 +752,171 @@ class MeetingNotesApp {
                   .replace(/\\,/g, ',')
                   .replace(/\\;/g, ';')
                   .replace(/\\\\/g, '\\');
+    }
+
+    // Voice Recognition Methods
+    initializeVoiceRecognition() {
+        // Check if browser supports Speech Recognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            console.warn('Speech Recognition not supported in this browser');
+            if (this.voiceBtn) {
+                this.voiceBtn.disabled = true;
+                this.voiceBtn.title = 'Voice input not supported in this browser';
+                this.voiceBtn.style.opacity = '0.5';
+            }
+            return;
+        }
+
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = 'en-US';
+
+        this.recognition.onstart = () => {
+            this.isRecording = true;
+            this.finalTranscript = '';
+            this.interimTranscript = '';
+            this.voiceBtn.classList.add('recording');
+            this.voiceBtn.innerHTML = '<span class="icon">⏹️</span> Stop Recording';
+            this.voiceStatus.classList.remove('hidden');
+            this.voiceStatusText.textContent = 'Listening...';
+        };
+
+        this.recognition.onresult = (event) => {
+            let interim = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+
+                if (event.results[i].isFinal) {
+                    this.finalTranscript += transcript + ' ';
+
+                    // Auto-save if enabled
+                    if (this.autoSaveNotes.checked) {
+                        this.addVoiceNote(transcript);
+                    }
+                } else {
+                    interim += transcript;
+                }
+            }
+
+            this.interimTranscript = interim;
+            this.updateNoteInput();
+        };
+
+        this.recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            this.voiceStatusText.textContent = `Error: ${event.error}`;
+
+            if (event.error === 'no-speech') {
+                this.voiceStatusText.textContent = 'No speech detected. Please try again.';
+            } else if (event.error === 'not-allowed') {
+                this.voiceStatusText.textContent = 'Microphone access denied';
+                setTimeout(() => this.stopVoiceRecognition(), 2000);
+            }
+        };
+
+        this.recognition.onend = () => {
+            if (this.isRecording) {
+                // Restart if still recording (user didn't stop manually)
+                try {
+                    this.recognition.start();
+                } catch (error) {
+                    this.stopVoiceRecognition();
+                }
+            }
+        };
+    }
+
+    toggleVoiceRecognition() {
+        if (!this.recognition) {
+            alert('Voice recognition is not supported in your browser. Please use Chrome, Edge, or Safari.');
+            return;
+        }
+
+        if (this.isRecording) {
+            this.stopVoiceRecognition();
+        } else {
+            this.startVoiceRecognition();
+        }
+    }
+
+    startVoiceRecognition() {
+        if (!this.recognition) return;
+
+        try {
+            this.recognition.start();
+        } catch (error) {
+            console.error('Failed to start voice recognition:', error);
+            alert('Could not start voice recognition. Please check microphone permissions.');
+        }
+    }
+
+    stopVoiceRecognition() {
+        if (!this.recognition) return;
+
+        this.isRecording = false;
+        this.recognition.stop();
+
+        this.voiceBtn.classList.remove('recording');
+        this.voiceBtn.innerHTML = '<span class="icon">🎤</span> Voice Input';
+        this.voiceStatus.classList.add('hidden');
+
+        // Add final transcript to note input if auto-save is off
+        if (!this.autoSaveNotes.checked && this.finalTranscript.trim()) {
+            const currentText = this.noteInput.value.trim();
+            this.noteInput.value = currentText ?
+                currentText + ' ' + this.finalTranscript.trim() :
+                this.finalTranscript.trim();
+        }
+
+        this.finalTranscript = '';
+        this.interimTranscript = '';
+    }
+
+    updateNoteInput() {
+        if (!this.autoSaveNotes.checked) {
+            const currentText = this.noteInput.value.trim();
+            const baseText = currentText || this.finalTranscript.trim();
+            const displayText = baseText + (this.interimTranscript ? ' ' + this.interimTranscript : '');
+            this.noteInput.value = displayText;
+        } else {
+            // Show only interim results when auto-saving
+            this.noteInput.value = this.interimTranscript;
+        }
+    }
+
+    addVoiceNote(transcript) {
+        const content = transcript.trim();
+        if (!content) return;
+
+        const meeting = this.meetings.find(m => m.id === this.currentMeetingId);
+        if (!meeting) return;
+
+        const note = {
+            content: content,
+            timestamp: new Date().toISOString(),
+            isActionItem: this.isActionItem.checked
+        };
+
+        meeting.notes.push(note);
+        meeting.updatedAt = new Date().toISOString();
+        this.saveMeetings();
+
+        // Re-render notes
+        this.renderNotes(meeting);
+
+        // Clear the transcript for next phrase
+        this.finalTranscript = '';
+        this.voiceStatusText.textContent = 'Note saved! Listening...';
+
+        setTimeout(() => {
+            if (this.isRecording) {
+                this.voiceStatusText.textContent = 'Listening...';
+            }
+        }, 1500);
     }
 
     render() {

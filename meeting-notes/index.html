@@ -112,7 +112,20 @@
             <div class="notes-section">
                 <h3>Notes</h3>
                 <div class="note-input-container">
-                    <textarea id="noteInput" placeholder="Type your note here... (Ctrl/Cmd + Enter to add)" rows="3"></textarea>
+                    <div class="voice-controls">
+                        <button id="voiceBtn" class="btn btn-voice" title="Start voice recording">
+                            <span class="icon">🎤</span> Voice Input
+                        </button>
+                        <div id="voiceStatus" class="voice-status hidden">
+                            <span class="recording-indicator"></span>
+                            <span id="voiceStatusText">Listening...</span>
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoSaveNotes">
+                            Auto-save voice notes
+                        </label>
+                    </div>
+                    <textarea id="noteInput" placeholder="Type your note here or use voice input... (Ctrl/Cmd + Enter to add)" rows="3"></textarea>
                     <div class="note-actions">
                         <label class="checkbox-label">
                             <input type="checkbox" id="isActionItem">
